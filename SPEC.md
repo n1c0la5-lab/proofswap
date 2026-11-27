@@ -1,6 +1,6 @@
 # ProofSwap — Technical Specification
 
-**Status:** Draft v0.3 · Research prototype
+**Status:** Draft v0.4 · Research prototype
 **Networks:** Monero **stagenet** · ICP mainnet canisters using **test tokens only** (ckTESTBTC, ckSepoliaUSDC)
 **Out of scope:** Monero mainnet, real-value tokens, any hosted service
 
@@ -289,7 +289,48 @@ Any mainnet use would need an independent audit, a blackholed or DAO-controlled 
 - Q5: Can the canister check inclusion more cheaply than full PoW, e.g. verifying that the block's tx hash list commits to `txid` via the header's Merkle root, so a node must at least forge a header? (Narrows the trust gap, does not close it.)
 - Q6: How are the k nodes chosen and rotated, and who can change the list (controller vs. governance)?
 
+## 15. Related work
+
+ProofSwap is not the only project working on non-custodial Monero trading, and it should not be. This section shows where each approach fits. Status as of November 2026.
+
+| Project | Mechanism | Who holds XMR during a trade | Pairs | Status |
+|---|---|---|---|---|
+| [eigenwallet](https://github.com/eigenwallet/core) (formerly UnstoppableSwap) | Atomic swap: adaptor signatures on BTC, shared spend key on XMR | Nobody (2-of-2 key split) | BTC → XMR | Live |
+| [BasicSwap](https://github.com/basicswap/basicswap) | Atomic swaps (HTLCs on scriptable coins, adaptor signatures for XMR) | Nobody | XMR ⇄ BTC, LTC, DASH, FIRO, PIVX, DCR | Live |
+| [Bisq](https://bisq.network) (XMR auto-confirm) | BTC leg in 2-of-2 multisig; the XMR receiver's client checks txid + tx key against explorers | Nobody (paid directly) | XMR ⇄ BTC | Live |
+| [Haveno](https://github.com/haveno-dex/haveno) (e.g. RetoSwap) | P2P trades, 2-of-3 Monero multisig escrow, human arbitrators | Multisig (traders + arbitrator) | XMR ⇄ crypto and fiat | Live |
+| [THORChain](https://thorchain.org) | Liquidity pools; validators hold assets in threshold-signature vaults | Validator vault | XMR ⇄ BTC, ETH, stablecoins, … | Code released, activation pending |
+| [Serai](https://github.com/serai-dex/serai) | Liquidity pools; economically secured threshold multisig | Validator multisig | BTC, ETH, XMR | Mainnet not launched |
+| [DCRDEX](https://github.com/decred/dcrdex) | Order book, atomic swaps | Nobody | XMR ⇄ BTC in progress | XMR wallet merged, swap PR open |
+| **ProofSwap** | Escrow on the ck-token leg only; XMR leg checked via OutProof + t-of-k nodes | **Nobody (paid directly)** | XMR ⇄ ICRC tokens (ckBTC, ckUSDC, …) | Spec stage, stagenet only |
+
+### 15.1 What ProofSwap does differently
+
+- **No pooled or shared XMR.** XMR goes straight from payer to payee. No protocol, multisig or validator set ever controls it, so there is no XMR honeypot. Only the ck leg and the bond sit in escrow.
+- **Stablecoins, not just BTC.** XMR ⇄ ckUSDC is a first-class pair. Merchants and people paid in XMR often want dollars, not another volatile asset.
+- **No arbitrator.** An order ends by a valid proof or by a timeout, not by a person's decision.
+- **Little interaction.** The ck-side locks once and can go offline. The xmr-side makes one payment and submits one proof inside the pay window (§4.1). There is no multi-round protocol in which both sides must stay online.
+- **The check runs in the contract, not in a client.** Compared with Bisq auto-confirm, release does not depend on the receiver's software being online and opted in, and the proof is bound to the order (§6.1) instead of revealing the tx key.
+
+### 15.2 What ProofSwap does worse
+
+- **Liquidity.** It is P2P: without a counterparty there is no trade. Pool designs (THORChain, Serai) win on instant execution.
+- **Per-trade privacy leak.** The OutProof and order record publicly link one txid, the payee address, the amount and both ICP principals (§11). Atomic swaps reveal less.
+- **Trust in RPC nodes.** Validity and inclusion of the XMR payment rest on t-of-k node agreement. The canister checks no ring signatures, key images or PoW (§7, §10). Atomic swaps do not have this assumption.
+- **Trust in ICP.** The escrow is only as safe as the ICP subnet and the canister controller (§10).
+- **It does not exist yet.** Everything here is a specification.
+
+### 15.3 Why not just …
+
+- **… use eigenwallet?** For BTC → XMR, you should. ProofSwap targets pairs atomic swaps do not cover well: stablecoins and other ICRC tokens.
+- **… use Haveno?** Haveno works and supports fiat. ProofSwap replaces the human arbitrator with a proof check plus node agreement, for crypto-only trades.
+- **… use Bisq auto-confirm?** It is the closest prior art (see References). ProofSwap moves the same idea from an opt-in client feature into the escrow contract.
+- **… wait for THORChain?** Pools beat order books on liquidity. But pooled XMR in a validator vault is a different trust model: a key-management bug or validator collusion puts the whole pool at risk, not one trade.
+- **… build ckXMR?** That would need threshold CLSAG signing in the ICP protocol itself. Serai shows threshold Monero signing is possible, but adding it to ICP is DFINITY's decision, and wrapping a privacy asset on a public ledger defeats the point (§2).
+
 ## Changelog
+
+- v0.4 (2026-11-27): added §15 Related work.
 
 - v0.3 (2026-11-27): Bisq XMR auto-confirm added as closest prior art.
 - v0.2 (2026-11-27): spelled out that the OutProof does not prove validity or inclusion; corrected the §10 residual risk for fake payments (was "none"); added Q5, Q6.
