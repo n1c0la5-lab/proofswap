@@ -1,6 +1,6 @@
 # ProofSwap — Technical Specification
 
-**Status:** Draft v0.2 · Research prototype
+**Status:** Draft v0.3 · Research prototype
 **Networks:** Monero **stagenet** · ICP mainnet canisters using **test tokens only** (ckTESTBTC, ckSepoliaUSDC)
 **Out of scope:** Monero mainnet, real-value tokens, any hosted service
 
@@ -291,6 +291,7 @@ Any mainnet use would need an independent audit, a blackholed or DAO-controlled 
 
 ## Changelog
 
+- v0.3 (2026-11-27): Bisq XMR auto-confirm added as closest prior art.
 - v0.2 (2026-11-27): spelled out that the OutProof does not prove validity or inclusion; corrected the §10 residual risk for fake payments (was "none"); added Q5, Q6.
 - v0.1 (2026-11-26): first draft.
 
@@ -299,4 +300,4 @@ Any mainnet use would need an independent audit, a blackholed or DAO-controlled 
 - Monero source: `src/crypto/crypto.cpp` (`generate_tx_proof`, `check_tx_proof`), `src/wallet/wallet2.cpp`
 - Monero daemon RPC: `get_transactions`, `get_block_header_by_height`, `get_block`
 - ICP docs: HTTPS outcalls, ICRC-1/ICRC-2, Chain Fusion, chain-key tokens
-- Prior art: Haveno (multisig and arbitrators), XMR⇄BTC atomic swaps (adaptor signatures, COMIT/eigenwallet)
+- Prior art: **Bisq XMR auto-confirm** (2020): the XMR sender supplies txid and tx key, the receiver's client checks it against Monero explorer instances (hosted by Bisq or self-run) and, if enabled, confirms receipt so the BTC leg is released from the 2-of-2 multisig. ProofSwap moves that check from a client into the escrow contract and uses a message-bound OutProof instead of revealing the tx key. Haveno (multisig and arbitrators), XMR⇄BTC atomic swaps (adaptor signatures, COMIT/eigenwallet)

@@ -19,8 +19,9 @@ ck-side locks tokens → xmr-side pays XMR → submits OutProof → canister ver
 |---|---|
 | `ckXMR` (wrapped Monero) | No threshold CLSAG on ICP, and wrapping kills the privacy anyway |
 | Multisig and an arbitrator (Haveno) | A human in the loop |
+| Bisq XMR auto-confirm | Closest prior art: BTC leg in 2-of-2 multisig, XMR leg checked with the tx key against an explorer. But the check runs in the receiver's own client (opt-in), release depends on that client, disputes go to mediation, and it covers BTC only |
 | Adaptor-signature atomic swaps (xmr-btc-swap) | Needs Bitcoin script on the other side; ICP threshold signing can't produce adaptor signatures |
-| **ProofSwap** | Escrow only on the side ICP *can* control; verify the other side. Works with any ICRC token |
+| **ProofSwap** | Same idea, enforced by a contract: escrow only on the side ICP *can* control, verify the other side on-chain, release without anyone's cooperation. Works with any ICRC token |
 
 No new cryptography: the verifier is a port of Monero's own `check_tx_proof`.
 
