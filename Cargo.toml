@@ -1,0 +1,13 @@
+[workspace]
+resolver = "2"
+members = ["crates/proofswap-xmr-verify"]
+
+[workspace.package]
+edition = "2021"
+rust-version = "1.85"
+license = "MIT"
+repository = "https://github.com/n1c0la5-lab/proofswap"
+
+[profile.release]
+opt-level = "s"
+lto = true
