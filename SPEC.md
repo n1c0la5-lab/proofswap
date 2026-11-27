@@ -1,6 +1,6 @@
 # ProofSwap — Technical Specification
 
-**Status:** Draft v0.4 · Research prototype
+**Status:** Draft v0.5 · Research prototype
 **Networks:** Monero **stagenet** · ICP mainnet canisters using **test tokens only** (ckTESTBTC, ckSepoliaUSDC)
 **Out of scope:** Monero mainnet, real-value tokens, any hosted service
 
@@ -137,13 +137,13 @@ This is a port of `crypto::check_tx_proof` (src/crypto/crypto.cpp) and `wallet2:
 2. Decode `payee_address`, which gives `(A, B)` = (public view key, public spend key) and the subaddress flag.
 3. Decode the proof: for each tx pubkey, a pair `(D, sig)` where `D = r·A`.
 4. `prefix_hash = H_s(txid || message)`.
-5. Verify each `sig` as a proof that the same `r` satisfies `R = r·G` (or `R = r·B` for subaddresses) and `D = r·A`, with domain separator `TXPROOF_V2`.
-6. For each output index `j`:
-   - `derivation = 8·D` (using `D_j` when an additional key applies)
+5. Verify each `sig` as a proof that the same `r` satisfies `R = r·G` (or `R = r·B` for subaddresses) and `D = r·A`, with domain separator `TXPROOF_V2`. As in Monero, the proof is valid if **at least one** `sig` verifies: in a transaction with additional tx public keys, the entries for outputs to other recipients do not verify for this address, which is normal. Requiring all of them would reject honest proofs.
+6. For each output index `j`, using only the `D` of entries whose `sig` verified:
+   - `derivation = 8·D` (first the main key's `D`, then `D_j` of additional key `j`)
    - `s = H_s(derivation || varint(j))`
    - Output belongs to the payee ⇔ `P_j == s·G + B`, and the view tag matches when present.
-   - Decrypt the amount: `amount = ecdhAmount_j ⊕ H_s("amount" || s)[0..8]`
-   - Check the commitment: `C_j == H_s("commitment_mask" || s)·G + amount·H`
+   - Decrypt the amount: `amount = ecdhAmount_j ⊕ H("amount" || s)[0..8]`, with `H` = Keccak-256 **without** reduction mod l (not `H_s`)
+   - Check the commitment: `C_j == H_s("commitment_mask" || s)·G + amount·H`. An output whose commitment does not open contributes 0.
 7. `received = Σ amount_j` over matching outputs.
 
 **Acceptance rules (all must hold):**
@@ -330,6 +330,7 @@ ProofSwap is not the only project working on non-custodial Monero trading, and i
 
 ## Changelog
 
+- v0.5 (2026-11-27): §6.3 corrected against Monero's `check_tx_proof` while porting it: a proof needs at least one valid entry, not all (step 5); only verified entries give derivations (step 6); the amount pad is plain Keccak `H`, not `H_s` (step 6).
 - v0.4 (2026-11-27): added §15 Related work.
 
 - v0.3 (2026-11-27): Bisq XMR auto-confirm added as closest prior art.
