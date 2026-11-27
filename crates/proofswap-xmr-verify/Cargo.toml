@@ -1,0 +1,15 @@
+[package]
+name = "proofswap-xmr-verify"
+version = "0.1.0"
+description = "Verifier for Monero OutProofV2 payment proofs (stagenet only), no_std"
+edition.workspace = true
+rust-version.workspace = true
+license = "MIT AND BSD-3-Clause"
+repository.workspace = true
+publish = false
+
+[dependencies]
+curve25519-dalek = { version = "=5.0.0", default-features = false, features = ["alloc", "precomputed-tables"] }
+sha3 = { version = "=0.12.0", default-features = false }
+
+[dev-dependencies]
