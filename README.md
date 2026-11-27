@@ -9,7 +9,7 @@ ck-side locks tokens → xmr-side pays XMR → submits OutProof → canister ver
                                          └─ no valid proof before deadline → refund + bond slashed
 ```
 
-> **Status: specification stage. There is no code yet.** Everything below describes the design in [`SPEC.md`](./SPEC.md), not a working system.
+> **Status: specification stage; verifier crate in progress.** [`crates/proofswap-xmr-verify`](./crates/proofswap-xmr-verify) has unit tests only (Monero's own crypto test vectors plus synthetic proofs), and is **not yet validated against real stagenet vectors**. There is no canister yet. Everything else below describes the design in [`SPEC.md`](./SPEC.md), not a working system.
 >
 > ⚠️ **Research prototype.** Monero stagenet and ICP test tokens only. Not a service. Not audited. Don't put real funds anywhere near it.
 
@@ -36,15 +36,26 @@ Criticism of this, or of anything else in the spec, is welcome: open an issue.
 - [`SPEC.md`](./SPEC.md): protocol, verification algorithm, state machine, threat model, open questions
 - [`SPEC.md` §15](./SPEC.md#15-related-work): how ProofSwap compares to eigenwallet, BasicSwap, Bisq, Haveno, THORChain, Serai and DCRDEX
 
-## Planned layout
+## Layout
 
 ```
-crates/proofswap-xmr-verify/   # OutProof V2 + output scanning (pure Rust, tested against stagenet vectors)
-canisters/backend/             # orderbook, ICRC escrow, outcalls, timers
-site/                          # static showcase / frontend
-test-vectors/                  # proofs generated with monero-wallet-rpc on stagenet
+crates/proofswap-xmr-verify/   # OutProof V2 + output scanning, no_std, builds for wasm32 (in progress)
+scripts/gen-test-vectors.py    # stagenet vector generator via monero-wallet-rpc (written, not run yet)
+test-vectors/                  # stagenet vectors (empty until the generator has run)
+canisters/backend/             # planned: orderbook, ICRC escrow, outcalls, timers
+site/                          # planned: static showcase / frontend
+```
+
+Build and test (Rust 1.85+):
+
+```
+cargo test
+cargo clippy --all-targets -- -D warnings
+cargo build --target wasm32-unknown-unknown -p proofswap-xmr-verify
 ```
 
 ## License
 
-MIT
+MIT. `crates/proofswap-xmr-verify` contains code ported from Monero and is
+additionally under Monero's BSD-3-Clause license, see
+[`crates/proofswap-xmr-verify/LICENSE-MONERO`](./crates/proofswap-xmr-verify/LICENSE-MONERO).
