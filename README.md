@@ -34,6 +34,7 @@ Criticism of this, or of anything else in the spec, is welcome: open an issue.
 ## Docs
 
 - [`SPEC.md`](./SPEC.md): protocol, verification algorithm, state machine, threat model, open questions
+- [`SPEC.md` §15](./SPEC.md#15-related-work): how ProofSwap compares to eigenwallet, BasicSwap, Bisq, Haveno, THORChain, Serai and DCRDEX
 
 ## Planned layout
 
